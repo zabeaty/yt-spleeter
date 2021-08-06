@@ -1,7 +1,24 @@
-FROM ubuntu:latest
-RUN apt update && DEBIAN_FRONTEND=noninteractive apt install -yq python python3-pip ffmpeg
-RUN pip install --upgrade youtube-dl spleeter
-RUN mkdir -p /data
-WORKDIR /data
+FROM ubuntu:latest AS yts_os
+RUN apt update && \
+	DEBIAN_FRONTEND=noninteractive apt install -yq python python3-pip ffmpeg bash gettext && \
+	apt-get autoremove --purge -y && \
+    apt-get -y clean && \
+    rm -rf /var/lib/apt/lists/*
+
+FROM yts_os AS yts_build
+RUN pip install --upgrade youtube-dl spleeter && mkdir -p /data
+
+
+
+FROM yts_build AS yts_app
+LABEL maintainer="zabeaty@gmail.com"
+ARG AUDIO_FORMAT="mp3"
+ARG AUDIO_QUALITY="0"
+ARG SPLEETER_STEMS="2"
+ARG SPLEETER_COMMAND="spleeter separate -p spleeter:${SPLEETER_STEMS}stems -o /data/spleeter_${SPLEETER_STEMS}stems {}"
+ARG OUTPUT_TPL="/data/youtube-dl/%(title)s-%(id)s.%(ext)s"
+ARG ENTRYPOINT_COMMAND="youtube-dl -x --audio-format $AUDIO_FORMAT --audio-quality $AUDIO_QUALITY --output '$OUTPUT_TPL' --exec '$SPLEETER_COMMAND'"
+RUN echo "#!/usr/bin/env bash\n\n$ENTRYPOINT_COMMAND \$1\n" > /entry.sh && chmod a+x /entry.sh 
 VOLUME /data
-ENTRYPOINT [ "youtube-dl", "-x", "--audio-format", "mp3", "--audio-quality", "0", "--output", "/data/youtube-dl/%(title)s-%(id)s.%(ext)s", "--exec", "spleeter separate -o /data/spleeter {} && spleeter separate -p spleeter:4stems -o /data/spleeter_4_stems {} && spleeter separate -p spleeter:5stems -o /data/spleeter_5_stems {}" ]
+WORKDIR /data
+ENTRYPOINT [ "/entry.sh" ]
