@@ -1,5 +1,5 @@
 FROM ubuntu:latest AS yts_os
-RUN add-apt-repository universe && apt update && \
+RUN apt update && \
 	DEBIAN_FRONTEND=noninteractive apt install -yq python3-pip ffmpeg bash gettext && \
 	apt-get autoremove --purge -y && \
     apt-get -y clean && \
