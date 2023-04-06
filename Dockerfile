@@ -1,6 +1,6 @@
 FROM ubuntu:latest AS yts_os
-RUN apt update && \
-	DEBIAN_FRONTEND=noninteractive apt install -yq python python3-pip ffmpeg bash gettext && \
+RUN add-apt-repository universe && apt update && \
+	DEBIAN_FRONTEND=noninteractive apt install -yq python3-pip ffmpeg bash gettext && \
 	apt-get autoremove --purge -y && \
     apt-get -y clean && \
     rm -rf /var/lib/apt/lists/*
