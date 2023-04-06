@@ -6,7 +6,8 @@ RUN apt update && \
     rm -rf /var/lib/apt/lists/*
 
 FROM yts_os AS yts_build
-RUN pip install --upgrade youtube-dl spleeter && mkdir -p /data
+RUN pip install youtube-dl spleeter
+RUN mkdir -p /data
 
 
 
