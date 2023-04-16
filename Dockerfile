@@ -1,12 +1,15 @@
 FROM ubuntu:latest AS yts_os
 RUN apt update && \
-	DEBIAN_FRONTEND=noninteractive apt install -yq python python3-pip ffmpeg bash gettext && \
+	DEBIAN_FRONTEND=noninteractive apt install -yq python python3-pip ffmpeg bash gettext git && \
 	apt-get autoremove --purge -y && \
     apt-get -y clean && \
     rm -rf /var/lib/apt/lists/*
 
 FROM yts_os AS yts_build
-RUN pip install --upgrade youtube-dl spleeter && mkdir -p /data
+
+RUN pip install --upgrade --force-reinstall git+https://github.com/ytdl-org/youtube-dl.git@master
+RUN pip install --upgrade spleeter
+RUN mkdir -p /data
 
 
 
